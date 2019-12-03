@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:converter_app/category.dart';
 import 'package:converter_app/unit.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
@@ -15,18 +16,14 @@ const _padding = EdgeInsets.all(16.0);
 /// While it is named ConverterRoute, a more apt name would be ConverterScreen,
 /// because it is responsible for the UI at the route's destination.
 class ConverterRoute extends StatefulWidget {
-  /// Color for this [Category].
-  final Color color;
+  /// The current [Category] for unit conversion.
+  final Category category;
 
-  /// Units for this [Category].
-  final List<Unit> units;
-
-  /// This [ConverterRoute] requires the color and units to not be null.
+  /// This [UnitConverter] takes in a [Category] with [Units]. It can't be null.
   const ConverterRoute({
-    @required this.color,
-    @required this.units,
-  })  : assert(color != null),
-        assert(units != null);
+    @required this.category,
+  }) : assert(category != null);
+
 
   @override
   State<StatefulWidget> createState() {
@@ -52,7 +49,7 @@ class _ConverterRouteState extends State<ConverterRoute> {
 
   void _createDropDownMenuItems() {
     var newItems = <DropdownMenuItem>[];
-    for (var unit in widget.units) {
+    for (var unit in widget.category.units) {
       newItems.add(DropdownMenuItem(
           value: unit.name,
           child: Container(
@@ -70,8 +67,8 @@ class _ConverterRouteState extends State<ConverterRoute> {
 
   void _setDefaults() {
     setState(() {
-      _fromValue = widget.units[0];
-      _toValue = widget.units[1];
+      _fromValue = widget.category.units[0];
+      _toValue = widget.category.units[1];
     });
   }
 
@@ -116,7 +113,7 @@ class _ConverterRouteState extends State<ConverterRoute> {
   }
 
   Unit _getUnit(String unitName) {
-    return widget.units.firstWhere((Unit unit) {
+    return widget.category.units.firstWhere((Unit unit) {
       return unit.name == unitName;
     }, orElse: null);
   }
@@ -213,14 +210,26 @@ class _ConverterRouteState extends State<ConverterRoute> {
       ),
     );
 
-    final converter = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    final converter = ListView(
       children: <Widget>[input, arrows, output],
     );
 
     return Padding(
       padding: _padding,
-      child: converter,
+        child: OrientationBuilder(
+        builder: (BuildContext context, Orientation orientation) {
+          if (orientation == Orientation.portrait) {
+            return converter;
+          } else {
+            return Center(
+              child: Container(
+                width: 450.0,
+                child: converter,
+              ),
+            );
+          }
+        }
+        )
     );
   }
 }
